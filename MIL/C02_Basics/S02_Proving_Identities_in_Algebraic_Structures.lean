@@ -145,13 +145,49 @@ variable {G : Type*} [Group G]
 #check (one_mul : ∀ a : G, 1 * a = a)
 #check (inv_mul_cancel : ∀ a : G, a⁻¹ * a = 1)
 
+#check (mul_assoc : ∀ a b c : G, a * b * c = a * (b * c))
+#check (one_mul : ∀ a : G, 1 * a = a)
+#check (inv_mul_cancel : ∀ a : G, a⁻¹ * a = 1)
+
 namespace MyGroup
 
+theorem lef_cancel {a b c : G} (h: a * b = a * c): b = c := by
+  have h1: a⁻¹ * (a * b) = a⁻¹ * (a * c) := by
+    rw [h]
+  repeat rw [← mul_assoc, inv_mul_cancel] at h1
+  repeat rw [one_mul] at h1
+  exact h1
+
+theorem one_comm {a : G}: a * 1 = a := by
+  have h1: a⁻¹ * a * 1 = 1 := by
+    rw [inv_mul_cancel]
+    rw [one_mul]
+  have h2: a⁻¹ * a = 1 := by
+    rw [inv_mul_cancel]
+  rw [← h1] at h2
+  rw [mul_assoc] at h2
+  apply lef_cancel at h2
+  symm at h2
+  exact h2
+
+
 theorem mul_inv_cancel (a : G) : a * a⁻¹ = 1 := by
-  sorry
+  have h1: a⁻¹ * a * a⁻¹ = a⁻¹ * 1 := by
+    rw [inv_mul_cancel, one_mul, one_comm]
+  rw [mul_assoc] at h1
+  apply lef_cancel h1
 
 theorem mul_one (a : G) : a * 1 = a := by
-  sorry
+  have h1: a⁻¹ * a * 1 = 1 := by
+    rw [inv_mul_cancel]
+    rw [one_mul]
+  have h2: a⁻¹ * a = 1 := by
+    rw [inv_mul_cancel]
+  rw [← h1] at h2
+  rw [mul_assoc] at h2
+  apply lef_cancel at h2
+  symm at h2
+  exact h2
 
 theorem mul_inv_rev (a b : G) : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
   sorry

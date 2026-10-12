@@ -23,10 +23,13 @@ example (a b c : ℝ) : a * b * c = b * c * a := by
 /- Try doing the first of these without providing any arguments at all,
    and the second with only one argument. -/
 example (a b c : ℝ) : a * (b * c) = b * (c * a) := by
-  sorry
+  rw [mul_comm]
+  rw [mul_assoc]
 
 example (a b c : ℝ) : a * (b * c) = b * (a * c) := by
-  sorry
+  rw [mul_comm]
+  rw [mul_assoc]
+  rw [mul_comm a]
 
 -- Using facts from the local context.
 example (a b c d e f : ℝ) (h : a * b = c * d) (h' : e = f) : a * (b * e) = c * (d * f) := by
@@ -36,7 +39,16 @@ example (a b c d e f : ℝ) (h : a * b = c * d) (h' : e = f) : a * (b * e) = c *
   rw [mul_assoc]
 
 example (a b c d e f : ℝ) (h : b * c = e * f) : a * b * c * d = a * e * f * d := by
-  sorry
+  rw [mul_assoc]
+  rw [mul_assoc]
+  rw [← mul_assoc b c d]
+  rw [h]
+  repeat rw [mul_assoc]
+
+example (a b c d : ℝ) (hyp : c = b * a - d) (hyp' : d = a * b) : c = 0 := by
+  rw [hyp, hyp']
+  rw [mul_comm]
+  rw [sub_self]
 
 example (a b c d : ℝ) (hyp : c = b * a - d) (hyp' : d = a * b) : c = 0 := by
   rw [hyp, hyp']

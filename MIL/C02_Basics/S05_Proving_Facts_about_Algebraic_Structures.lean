@@ -36,22 +36,46 @@ variable (x y z : α)
 #check (sup_le : x ≤ z → y ≤ z → x ⊔ y ≤ z)
 
 example : x ⊓ y = y ⊓ x := by
-  sorry
+  apply le_antisymm
+  apply le_inf inf_le_right inf_le_left
+  apply le_inf inf_le_right inf_le_left
 
 example : x ⊓ y ⊓ z = x ⊓ (y ⊓ z) := by
+  apply le_antisymm
+  apply le_inf
+  have h_x: x ⊓ y ⊓ z ≤ x ⊓ y := by
+    apply inf_le_left
+  apply le_trans h_x inf_le_left
+  apply le_inf
+  apply le_trans inf_le_left inf_le_right
+  exact le_trans inf_le_right (le_refl z)
   sorry
+
+#check le_trans
 
 example : x ⊔ y = y ⊔ x := by
-  sorry
+  apply le_antisymm
+  apply sup_le le_sup_right le_sup_left
+  apply sup_le le_sup_right le_sup_left
 
 example : x ⊔ y ⊔ z = x ⊔ (y ⊔ z) := by
+  apply ge_antisymm
+  apply sup_le
+  apply le_trans le_sup_left le_sup_left
+  apply sup_le
+  apply le_trans le_sup_right le_sup_left
+  apply le_trans le_sup_right le_rfl
   sorry
 
 theorem absorb1 : x ⊓ (x ⊔ y) = x := by
-  sorry
+  apply le_antisymm
+  apply le_trans inf_le_left le_rfl
+  apply le_inf le_rfl le_sup_left
 
 theorem absorb2 : x ⊔ x ⊓ y = x := by
-  sorry
+  apply le_antisymm
+  apply sup_le le_rfl inf_le_left
+  apply le_sup_left
 
 end
 
@@ -86,14 +110,27 @@ variable (a b c : R)
 
 #check (mul_nonneg : 0 ≤ a → 0 ≤ b → 0 ≤ a * b)
 
-example (h : a ≤ b) : 0 ≤ b - a := by
-  sorry
+theorem test1 (h : a ≤ b) : 0 ≤ b - a := by
+  apply add_le_add_left at h
+  specialize h (-a)
+  rw [add_comm, add_neg_cancel, add_comm] at h
+  rw [sub_eq_add_neg]
+  exact h
 
-example (h: 0 ≤ b - a) : a ≤ b := by
+#check sub_self
+
+theorem test2 (h: 0 ≤ b - a) : a ≤ b := by
   sorry
 
 example (h : a ≤ b) (h' : 0 ≤ c) : a * c ≤ b * c := by
-  sorry
+  apply test1 at h
+  apply mul_nonneg h at h'
+  have h1: (b - a)*c = b * c - a * c := by
+    exact sub_mul b a c
+  rw [h1] at h'
+  apply test2 at h'
+  exact h'
+
 
 end
 
@@ -106,7 +143,9 @@ variable (x y z : X)
 #check (dist_triangle x y z : dist x z ≤ dist x y + dist y z)
 
 example (x y : X) : 0 ≤ dist x y := by
-  sorry
-
+  have h: dist x x ≤ dist x y + dist y x := by
+    apply dist_triangle x y x
+  rw [dist_self] at h
+  rw [dist_comm y x] at h
+  linarith
 end
-

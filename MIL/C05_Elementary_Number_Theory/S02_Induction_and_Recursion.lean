@@ -17,6 +17,10 @@ example : fac 0 = 1 :=
 example : fac 0 = 1 := by
   rw [fac]
 
+example : fac 10 ≠ 1 := by
+  repeat rw [fac]
+  linarith
+
 example : fac 0 = 1 := by
   simp [fac]
 
@@ -48,7 +52,14 @@ theorem dvd_fac {i n : ℕ} (ipos : 0 < i) (ile : i ≤ n) : i ∣ fac n := by
 theorem pow_two_le_fac (n : ℕ) : 2 ^ (n - 1) ≤ fac n := by
   rcases n with _ | n
   · simp [fac]
-  sorry
+  . simp
+    induction' n with i hi
+    . simp [fac]
+    . rw [pow_succ', fac];
+      have : 2 ≤ i + 1 + 1 := by linarith
+      exact mul_le_mul' (this) (hi)
+
+
 section
 
 variable {α : Type*} (s : Finset ℕ) (f : ℕ → ℕ) (n : ℕ)
@@ -98,8 +109,14 @@ theorem sum_id (n : ℕ) : ∑ i ∈ range (n + 1), i = n * (n + 1) / 2 := by
   rw [Finset.sum_range_succ, mul_add 2, ← ih]
   ring
 
+-- simp simplifica operacoes segundo uma forma a minimazar uma quantidade arbitraria --
+
 theorem sum_sqr (n : ℕ) : ∑ i ∈ range (n + 1), i ^ 2 = n * (n + 1) * (2 * n + 1) / 6 := by
-  sorry
+  symm; apply Nat.div_eq_of_eq_mul_right (by norm_num : 0 < 6)
+  induction' n with n ih
+  . simp
+  rw [Finset.sum_range_succ, mul_add 6, ← ih]
+  ring
 end
 
 inductive MyNat where

@@ -22,16 +22,22 @@ def sbSet :=
 def sbFun (x : α) : β :=
   if x ∈ sbSet f g then f x else invFun g x
 
+#check invFun_eq
+
 theorem sb_right_inv {x : α} (hx : x ∉ sbSet f g) : g (invFun g x) = x := by
   have : x ∈ g '' univ := by
     contrapose! hx
     rw [sbSet, mem_iUnion]
     use 0
     rw [sbAux, mem_diff]
-    sorry
+    constructor
+    . trivial
+    . exact hx
   have : ∃ y, g y = x := by
-    sorry
-  sorry
+    simp at this
+    exact this
+  apply invFun_eq
+  exact this
 
 theorem sb_injective (hf : Injective f) : Injective (sbFun f g) := by
   set A := sbSet f g with A_def
@@ -50,15 +56,21 @@ theorem sb_injective (hf : Injective f) : Injective (sbFun f g) := by
       rw [if_pos x₁A, if_neg x₂nA] at hxeq
       rw [A_def, sbSet, mem_iUnion] at x₁A
       have x₂eq : x₂ = g (f x₁) := by
-        sorry
+        rw [A_def] at x₂nA
+        calc x₂
+          _ = g (invFun g x₂) := by rw [sb_right_inv f g x₂nA]
+          _ = g (f x₁) := by rw [hxeq]
       rcases x₁A with ⟨n, hn⟩
       rw [A_def, sbSet, mem_iUnion]
       use n + 1
       simp [sbAux]
       exact ⟨x₁, hn, x₂eq.symm⟩
-    sorry
+    rw [if_pos x₁A, if_pos x₂A] at hxeq
+    apply hf hxeq
   push_neg at xA
-  sorry
+  rw [if_neg xA.1, if_neg xA.2] at hxeq
+  have : g (invFun g x₁) = g (invFun g x₂) := by rw [hxeq]
+  rwa [sb_right_inv f g xA.1, sb_right_inv f g xA.2] at this
 
 theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
   set A := sbSet f g with A_def
@@ -78,7 +90,12 @@ theorem sb_surjective (hg : Injective g) : Surjective (sbFun f g) := by
     rw [h_def, sbFun, if_pos this]
     apply hg hx
 
-  sorry
+  rw [A_def] at gyA
+  use g y
+  simp only [h_def, sbFun]
+  rw [if_neg gyA]
+  apply hg
+  apply sb_right_inv f g gyA
 
 end
 

@@ -37,9 +37,7 @@ example (h : Surjective f) : u ⊆ f '' (f ⁻¹' u) := by
   rcases h y with ⟨x, fxeq⟩
   use x
   constructor
-  · show f x ∈ u
-    rw [fxeq]
-    exact yu
+  · sorry
   exact fxeq
 
 example (h : s ⊆ t) : f '' s ⊆ f '' t := by

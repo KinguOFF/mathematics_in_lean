@@ -4,6 +4,7 @@ import MIL.Common
 variable (a b c d e : ℝ)
 open Real
 
+
 #check (le_refl : ∀ a : ℝ, a ≤ a)
 #check (le_trans : a ≤ b → b ≤ c → a ≤ c)
 

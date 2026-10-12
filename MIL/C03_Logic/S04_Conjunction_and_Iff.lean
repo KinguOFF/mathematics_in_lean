@@ -63,8 +63,25 @@ example {x y : ℝ} (h : x ≤ y ∧ x ≠ y) : ¬y ≤ x := by
 example {x y : ℝ} (h : x ≤ y ∧ x ≠ y) : ¬y ≤ x :=
   fun h' ↦ h.right (le_antisymm h.left h')
 
+example {m n : ℕ} (h : m ∣ n ∧ m ≠ n) : m ∣ n ∧ ¬n ∣ m := by
+  constructor
+  exact h.left
+  rcases h with ⟨h1, h2⟩
+  intro h3
+  apply h2 (dvd_antisymm h1 h3)
+
+example {m n : ℕ} (h : m ∣ n ∧ m ≠ n) : m ∣ n ∧ ¬n ∣ m := by
+  rcases h with ⟨h₁, h₂⟩
+  contrapose! h₂
+  exact dvd_antisymm h₁ (h₂ h₁)
+
 example {m n : ℕ} (h : m ∣ n ∧ m ≠ n) : m ∣ n ∧ ¬n ∣ m :=
-  sorry
+  ⟨h.left, fun h1 => h.right (dvd_antisymm h.left h1)⟩
+
+example {m n : ℕ} (h : m ∣ n ∧ m ≠ n) : m ∣ n ∧ ¬n ∣ m := by
+  have ⟨h₁, h₂⟩ := h
+  contrapose! h₂
+  apply dvd_antisymm h₁ (h₂ h₁)
 
 example : ∃ x : ℝ, 2 < x ∧ x < 4 :=
   ⟨5 / 2, by norm_num, by norm_num⟩
@@ -102,15 +119,33 @@ example {x y : ℝ} (h : x ≤ y) : ¬y ≤ x ↔ x ≠ y :=
   ⟨fun h₀ h₁ ↦ h₀ (by rw [h₁]), fun h₀ h₁ ↦ h₀ (le_antisymm h h₁)⟩
 
 example {x y : ℝ} : x ≤ y ∧ ¬y ≤ x ↔ x ≤ y ∧ x ≠ y :=
-  sorry
+  ⟨fun ⟨h₁, h₂⟩ => ⟨h₁, (by contrapose! h₂; rw[h₂])⟩, fun ⟨h₁, h₂⟩ => ⟨h₁, (by contrapose! h₂; exact le_antisymm h₁ h₂)⟩ ⟩
+
+example {x y : ℝ} : x ≤ y ∧ ¬y ≤ x ↔ x ≤ y ∧ x ≠ y := by
+  constructor
+  . rintro ⟨h₁, h₂⟩
+    contrapose! h₂
+    rw [h₂ h₁]
+  rintro ⟨h₁, h₂⟩
+  contrapose! h₂
+  apply le_antisymm h₁ (h₂ h₁)
 
 theorem aux {x y : ℝ} (h : x ^ 2 + y ^ 2 = 0) : x = 0 :=
-  have h' : x ^ 2 = 0 := by sorry
+  have h' : x ^ 2 = 0 := by
+    apply le_antisymm
+    contrapose! h
+    intro h1
+    linarith [pow_two_nonneg y]
+    exact pow_two_nonneg x
   pow_eq_zero h'
 
-example (x y : ℝ) : x ^ 2 + y ^ 2 = 0 ↔ x = 0 ∧ y = 0 :=
-  sorry
-
+example (x y : ℝ) : x ^ 2 + y ^ 2 = 0 ↔ x = 0 ∧ y = 0 := by
+  constructor
+  . intro h
+    have h':y ^ 2 + x ^ 2 = 0 := by linarith
+    exact ⟨aux h, aux h'⟩
+  rintro ⟨h₁, h₂⟩
+  rw [sq_eq_zero_iff.mpr h₁, sq_eq_zero_iff.mpr h₂, add_zero]
 section
 
 example (x : ℝ) : |x + 3| < 5 → -8 < x ∧ x < 2 := by
@@ -130,7 +165,9 @@ theorem not_monotone_iff {f : ℝ → ℝ} : ¬Monotone f ↔ ∃ x y, x ≤ y �
   rfl
 
 example : ¬Monotone fun x : ℝ ↦ -x := by
-  sorry
+  rw [Monotone]
+  intro h
+  linarith [h zero_le_one]
 
 section
 variable {α : Type*} [PartialOrder α]
@@ -138,8 +175,13 @@ variable (a b : α)
 
 example : a < b ↔ a ≤ b ∧ a ≠ b := by
   rw [lt_iff_le_not_ge]
-  sorry
-
+  constructor
+  . rintro ⟨h₁, h₂⟩
+    contrapose! h₂
+    rw [h₂ h₁]
+  rintro ⟨h₁, h₂⟩
+  contrapose! h₂
+  apply le_antisymm h₁ (h₂ h₁)
 end
 
 section
@@ -148,10 +190,14 @@ variable (a b c : α)
 
 example : ¬a < a := by
   rw [lt_iff_le_not_ge]
-  sorry
+  by_contra h
+  apply h.right h.left
 
 example : a < b → b < c → a < c := by
   simp only [lt_iff_le_not_ge]
-  sorry
-
+  rintro ⟨h₁, h₂⟩ ⟨g₁, g₂⟩
+  constructor
+  apply le_trans h₁ g₁
+  contrapose! h₂
+  apply le_trans g₁ h₂
 end
